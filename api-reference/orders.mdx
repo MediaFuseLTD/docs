@@ -1,0 +1,57 @@
+---
+title: "Get Orders"
+api: "GET /orders"
+description: "Retrieve a paginated list of your PR distribution orders."
+---
+
+Fetches all distribution orders associated with your API Key's organization. Supports pagination and filtering by status.
+
+### Authorization
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token for authentication. Example: `Bearer cw_ext_your_api_key_here`
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="limit" type="integer" default="10">
+  The maximum number of orders to return per request.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  The number of orders to skip before starting to collect the result set.
+</ParamField>
+
+<ParamField query="status" type="string">
+  Filter orders by their current status. 
+  
+  **Allowed values:**
+  * `finished` (id: 3)
+  * `publishing` (id: 7)
+  * `publishing_ended` (id: 9)
+</ParamField>
+
+### Response
+
+<ResponseField name="total" type="integer">
+  The total number of orders matching your search criteria (ignoring pagination limits).
+</ResponseField>
+
+<ResponseField name="limit" type="integer">
+  The current limit applied to the response.
+</ResponseField>
+
+<ResponseField name="offset" type="integer">
+  The offset position for the current payload.
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  The array of order objects.
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -H "Authorization: Bearer cw_ext_your_key" \
+  "https://app.chainwire.org/api/external-api/v1/orders?status=finished&limit=20&offset=0"
+```
+</RequestExample>

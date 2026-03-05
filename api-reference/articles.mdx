@@ -1,0 +1,47 @@
+---
+title: "Get Order Articles"
+api: "GET /orders/{id}/articles"
+description: "Retrieve published articles for a specific order."
+---
+
+Fetches all published articles that are mapped directly back to a specific distribution order.
+
+### Authorization
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token for authentication. Example: `Bearer cw_ext_your_api_key_here`
+</ParamField>
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the order.
+</ParamField>
+
+### Response
+
+The response is an array of article objects. Each article row now includes eagerly-loaded website details mapped into the response.
+
+<ResponseField name="data" type="array">
+  <Expandable title="Article Object">
+    <ResponseField name="id" type="integer">
+      The article ID.
+    </ResponseField>
+    <ResponseField name="url" type="string">
+      The URL of the published article.
+    </ResponseField>
+    <ResponseField name="website_id" type="integer">
+      The ID of the website where the article is published.
+    </ResponseField>
+    <ResponseField name="website_domain" type="string">
+      The domain of the website where the article is published (e.g., `example.com`).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -H "Authorization: Bearer cw_ext_your_key" \
+  "https://app.chainwire.org/api/external-api/v1/orders/123/articles"
+```
+</RequestExample>

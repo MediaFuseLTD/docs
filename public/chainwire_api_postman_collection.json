@@ -1,0 +1,94 @@
+{
+    "info": {
+        "_postman_id": "a1b2c3d4-e5f6-7890-1234-56789abcdef0",
+        "name": "Chainwire External API",
+        "description": "Postman Collection for the Chainwire External API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Orders",
+            "item": [
+                {
+                    "name": "Get Orders",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/orders?limit=10&offset=0&status=finished",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "orders"
+                            ],
+                            "query": [
+                                {
+                                    "key": "limit",
+                                    "value": "10",
+                                    "description": "The maximum number of orders to return"
+                                },
+                                {
+                                    "key": "offset",
+                                    "value": "0",
+                                    "description": "The number of orders to skip"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "finished",
+                                    "description": "Filter by status: finished, publishing, publishing_ended"
+                                }
+                            ]
+                        },
+                        "description": "Retrieves a paginated list of your PR distribution orders."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Order Articles",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/orders/:id/articles",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "orders",
+                                ":id",
+                                "articles"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "123",
+                                    "description": "The order ID"
+                                }
+                            ]
+                        },
+                        "description": "Retrieves published articles mapped to a specific order, including website domains."
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "cw_ext_your_api_key_here",
+                "type": "string"
+            }
+        ]
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "https://api.chainwire.org/api/external-api/v1",
+            "type": "string"
+        }
+    ]
+}

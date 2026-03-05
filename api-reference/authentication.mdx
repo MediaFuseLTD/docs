@@ -1,0 +1,20 @@
+---
+title: "Authentication"
+description: "How to authenticate requests to the Chainwire API"
+---
+
+All endpoints require a Bearer token. Include your API Key in the `Authorization` header of your HTTP request.
+
+```http
+Authorization: Bearer cw_ext_your_api_key_here
+```
+
+## Base URL
+
+All API requests should be prefixed with the following base URL:
+
+```bash
+https://app.chainwire.org/api/external-api/v1
+```
+
+To manage your API keys, navigate to the **Organization Details** page within the Chainwire dashboard.
