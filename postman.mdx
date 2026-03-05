@@ -5,42 +5,31 @@ description: "Download the complete Chainwire API Postman collection to start te
 
 We provide a complete Postman collection that includes all of our external API endpoints, pre-configured with the correct variables and authentication headers.
 
-<a 
+<a
   href="/chainwire_api_postman_collection.json"
   download="chainwire_api_postman_collection.json"
   style={{
-    display: "flex",
+    display: "inline-flex",
     alignItems: "center",
-    gap: "16px",
-    padding: "20px 24px",
-    borderRadius: "16px",
-    background: "var(--background-light, #ffffff)",
+    gap: "8px",
+    padding: "8px 16px",
+    borderRadius: "8px",
+    background: "#0D9373",
+    color: "#fff",
+    fontSize: "14px",
+    fontWeight: 500,
     textDecoration: "none",
-    transition: "transform 0.25s ease, box-shadow 0.25s ease",
-    cursor: "pointer",
+    transition: "background 0.2s ease, transform 0.15s ease",
   }}
-  onMouseEnter={e => {
-    e.currentTarget.style.transform = "scale(1.02)";
-    e.currentTarget.style.boxShadow = "0 16px 30px rgba(13,147,115,0.15), 0 4px 10px rgba(0,0,0,0.08)";
-  }}
-  onMouseLeave={e => {
-    e.currentTarget.style.transform = "scale(1)";
-    e.currentTarget.style.boxShadow = "none";
-  }}
-  onMouseDown={e => { e.currentTarget.style.transform = "scale(0.98)"; }}
-  onMouseUp={e => { e.currentTarget.style.transform = "scale(1.02)"; }}
+  onMouseEnter={e => { e.currentTarget.style.background = "#096e56"; }}
+  onMouseLeave={e => { e.currentTarget.style.background = "#0D9373"; }}
+  onMouseDown={e => { e.currentTarget.style.transform = "scale(0.97)"; }}
+  onMouseUp={e => { e.currentTarget.style.transform = "scale(1)"; }}
 >
-  <svg style={{ width: "24px", height: "24px", flexShrink: 0, color: "#0D9373" }} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256">
+  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 256 256">
     <path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,106.34a8,8,0,0,0-11.32,11.32Z"/>
   </svg>
-  <div>
-    <div style={{ fontWeight: 600, fontSize: "15px", color: "var(--text-primary, #111)", marginBottom: "2px" }}>
-      Download Postman Collection
-    </div>
-    <div style={{ fontSize: "14px", color: "var(--text-secondary, #666)" }}>
-      Click here to download the Chainwire API Postman Collection (JSON)
-    </div>
-  </div>
+  Download Postman Collection
 </a>
 
 ## How to use
