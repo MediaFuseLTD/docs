@@ -15,7 +15,7 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/orders?limit=10&offset=0&status=finished",
+                            "raw": "{{baseUrl}}/orders?limit=50&offset=0&status=all",
                             "host": [
                                 "{{baseUrl}}"
                             ],
@@ -25,22 +25,22 @@
                             "query": [
                                 {
                                     "key": "limit",
-                                    "value": "10",
-                                    "description": "The maximum number of orders to return"
+                                    "value": "50",
+                                    "description": "Max orders to return (1–200, default 50)"
                                 },
                                 {
                                     "key": "offset",
                                     "value": "0",
-                                    "description": "The number of orders to skip"
+                                    "description": "Number of orders to skip"
                                 },
                                 {
                                     "key": "status",
-                                    "value": "finished",
-                                    "description": "Filter by status: finished, publishing, publishing_ended"
+                                    "value": "all",
+                                    "description": "Filter by status: all | finished | processing"
                                 }
                             ]
                         },
-                        "description": "Retrieves a paginated list of your PR distribution orders."
+                        "description": "Retrieves a paginated list of your PR distribution orders. Response includes press_release_title, order_status, distribution_date_utc, created_at."
                     },
                     "response": []
                 },
@@ -67,7 +67,7 @@
                                 }
                             ]
                         },
-                        "description": "Retrieves published articles mapped to a specific order, including website domains."
+                        "description": "Retrieves published articles for an order. Returns order_id, press_release_title, and data[] with article_url, published_at, website_domain."
                     },
                     "response": []
                 }

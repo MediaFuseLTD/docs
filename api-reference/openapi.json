@@ -19,7 +19,7 @@
     "/orders": {
       "get": {
         "summary": "Get Orders",
-        "description": "Retrieve a paginated list of your PR distribution orders.",
+        "description": "Retrieve a paginated list of orders for all members of your organization. Sorted by created_at descending.",
         "operationId": "getOrders",
         "tags": [
           "Orders"
@@ -28,17 +28,19 @@
           {
             "name": "limit",
             "in": "query",
-            "description": "The maximum number of orders to return per request.",
+            "description": "Max orders to return. Min: 1, Max: 200.",
             "required": false,
             "schema": {
               "type": "integer",
-              "default": 10
+              "default": 50,
+              "minimum": 1,
+              "maximum": 200
             }
           },
           {
             "name": "offset",
             "in": "query",
-            "description": "The number of orders to skip before starting to collect the result set.",
+            "description": "Number of orders to skip.",
             "required": false,
             "schema": {
               "type": "integer",
@@ -48,81 +50,22 @@
           {
             "name": "status",
             "in": "query",
-            "description": "Filter orders by their current status.",
+            "description": "Filter by status. `all` returns all orders. `finished` returns fully distributed orders. `processing` returns orders currently publishing.",
             "required": false,
             "schema": {
               "type": "string",
               "enum": [
+                "all",
                 "finished",
-                "publishing",
-                "publishing_ended"
-              ]
+                "processing"
+              ],
+              "default": "all"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "A paginated list of orders.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "total": {
-                      "type": "integer",
-                      "description": "Total number of orders matching criteria."
-                    },
-                    "limit": {
-                      "type": "integer",
-                      "description": "The limit applied to the response."
-                    },
-                    "offset": {
-                      "type": "integer",
-                      "description": "The offset applied to the response."
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object"
-                      },
-                      "description": "The array of order objects."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized — invalid or missing Bearer token."
-          },
-          "422": {
-            "description": "Validation error — invalid status value provided."
-          }
-        }
-      }
-    },
-    "/orders/{id}/articles": {
-      "get": {
-        "summary": "Get Order Articles",
-        "description": "Retrieve published articles for a specific order, including website domain information.",
-        "operationId": "getOrderArticles",
-        "tags": [
-          "Orders"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "The unique identifier of the order.",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A list of articles for the specified order.",
+            "description": "Paginated list of orders.",
             "content": {
               "application/json": {
                 "schema": {
@@ -134,25 +77,130 @@
                         "type": "object",
                         "properties": {
                           "id": {
-                            "type": "integer",
-                            "description": "The article ID."
+                            "type": "integer"
                           },
-                          "url": {
+                          "press_release_title": {
+                            "type": "string"
+                          },
+                          "order_status": {
                             "type": "string",
-                            "description": "The URL of the published article."
+                            "enum": [
+                              "finished",
+                              "processing"
+                            ]
                           },
-                          "website_id": {
-                            "type": "integer",
-                            "description": "The ID of the website."
+                          "distribution_date_utc": {
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "limit": {
+                      "type": "integer"
+                    },
+                    "offset": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "example": {
+                  "data": [
+                    {
+                      "id": 123,
+                      "press_release_title": "Chainwire Launches New Feature",
+                      "order_status": "finished",
+                      "distribution_date_utc": "2026-01-15 10:00:00",
+                      "created_at": "2026-01-14 08:00:00"
+                    }
+                  ],
+                  "total": 42,
+                  "limit": 50,
+                  "offset": 0
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized — invalid or missing Bearer token."
+          },
+          "422": {
+            "description": "Invalid status value."
+          }
+        }
+      }
+    },
+    "/orders/{id}/articles": {
+      "get": {
+        "summary": "Get Order Articles",
+        "description": "Retrieve published articles for a specific order. The order must belong to your organization.",
+        "operationId": "getOrderArticles",
+        "tags": [
+          "Orders"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The order ID.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order articles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "order_id": {
+                      "type": "integer"
+                    },
+                    "press_release_title": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "article_url": {
+                            "type": "string"
+                          },
+                          "published_at": {
+                            "type": "string"
                           },
                           "website_domain": {
-                            "type": "string",
-                            "description": "The domain of the website (e.g. example.com)."
+                            "type": "string"
                           }
                         }
                       }
                     }
                   }
+                },
+                "example": {
+                  "order_id": 123,
+                  "press_release_title": "Chainwire Launches New Feature",
+                  "data": [
+                    {
+                      "id": 1,
+                      "article_url": "https://example.com/chainwire-launches-new-feature",
+                      "published_at": "2026-01-20 09:00:00",
+                      "website_domain": "example.com"
+                    }
+                  ]
                 }
               }
             }
@@ -161,7 +209,7 @@
             "description": "Unauthorized — invalid or missing Bearer token."
           },
           "404": {
-            "description": "Order not found."
+            "description": "Order not found or not accessible."
           }
         }
       }

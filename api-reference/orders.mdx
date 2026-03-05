@@ -4,54 +4,100 @@ api: "GET /orders"
 description: "Retrieve a paginated list of your PR distribution orders."
 ---
 
-Fetches all distribution orders associated with your API Key's organization. Supports pagination and filtering by status.
+Fetches all orders for all members of your organization. Supports pagination and optional status filtering. Orders are returned sorted by `created_at` descending.
 
 ### Authorization
 
 <ParamField header="Authorization" type="string" required>
-  Bearer token for authentication. Example: `Bearer cw_ext_your_api_key_here`
+  Bearer token. Example: `Bearer cw_ext_your_api_key_here`
 </ParamField>
 
 ### Query Parameters
 
-<ParamField query="limit" type="integer" default="10">
-  The maximum number of orders to return per request.
+<ParamField query="limit" type="integer" default="50">
+  The maximum number of orders to return. Minimum: `1`, Maximum: `200`.
 </ParamField>
 
 <ParamField query="offset" type="integer" default="0">
   The number of orders to skip before starting to collect the result set.
 </ParamField>
 
-<ParamField query="status" type="string">
-  Filter orders by their current status. 
-  
-  **Allowed values:**
-  * `finished` (id: 3)
-  * `publishing` (id: 7)
-  * `publishing_ended` (id: 9)
+<ParamField query="status" type="string" default="all">
+  Filter orders by their current status.
+
+  | Value | Description |
+  |---|---|
+  | `all` | All orders (default) |
+  | `finished` | Fully distributed orders |
+  | `processing` | Orders currently publishing or in publishing_ended state |
 </ParamField>
 
 ### Response
 
 <ResponseField name="total" type="integer">
-  The total number of orders matching your search criteria (ignoring pagination limits).
+  The total number of orders matching the query (before pagination).
 </ResponseField>
 
 <ResponseField name="limit" type="integer">
-  The current limit applied to the response.
+  The limit applied to this response.
 </ResponseField>
 
 <ResponseField name="offset" type="integer">
-  The offset position for the current payload.
+  The offset applied to this response.
 </ResponseField>
 
 <ResponseField name="data" type="array">
-  The array of order objects.
+  <Expandable title="Order Object">
+    <ResponseField name="id" type="integer">
+      The order ID.
+    </ResponseField>
+    <ResponseField name="press_release_title" type="string">
+      Title of the press release attached to this order.
+    </ResponseField>
+    <ResponseField name="order_status" type="string">
+      Human-readable status: `finished` or `processing`.
+    </ResponseField>
+    <ResponseField name="distribution_date_utc" type="string">
+      Scheduled distribution date in UTC. Falls back to `created_at` for unscheduled (immediate) orders.
+    </ResponseField>
+    <ResponseField name="created_at" type="string">
+      Order creation timestamp.
+    </ResponseField>
+  </Expandable>
 </ResponseField>
 
 <RequestExample>
-```bash cURL
+```bash All orders
 curl -H "Authorization: Bearer cw_ext_your_key" \
-  "https://app.chainwire.org/api/external-api/v1/orders?status=finished&limit=20&offset=0"
+  "https://app.chainwire.org/api/external-api/v1/orders?limit=50&offset=0"
+```
+```bash Finished orders only
+curl -H "Authorization: Bearer cw_ext_your_key" \
+  "https://app.chainwire.org/api/external-api/v1/orders?status=finished&limit=50&offset=0"
 ```
 </RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "data": [
+    {
+      "id": 123,
+      "press_release_title": "Chainwire Launches New Feature",
+      "order_status": "finished",
+      "distribution_date_utc": "2026-01-15 10:00:00",
+      "created_at": "2026-01-14 08:00:00"
+    }
+  ],
+  "total": 42,
+  "limit": 50,
+  "offset": 0
+}
+```
+```json 422 – Invalid status
+{
+  "error": "Invalid status",
+  "message": "Allowed values for 'status': all, finished, processing."
+}
+```
+</ResponseExample>

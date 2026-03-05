@@ -4,37 +4,43 @@ api: "GET /orders/{id}/articles"
 description: "Retrieve published articles for a specific order."
 ---
 
-Fetches all published articles that are mapped directly back to a specific distribution order.
+Returns the published article URLs, publication dates, and website domains for a specific order. The order must belong to your organization, otherwise a 404 is returned.
 
 ### Authorization
 
 <ParamField header="Authorization" type="string" required>
-  Bearer token for authentication. Example: `Bearer cw_ext_your_api_key_here`
+  Bearer token. Example: `Bearer cw_ext_your_api_key_here`
 </ParamField>
 
 ### Path Parameters
 
 <ParamField path="id" type="integer" required>
-  The unique identifier of the order.
+  The unique ID of the order.
 </ParamField>
 
 ### Response
 
-The response is an array of article objects. Each article row now includes eagerly-loaded website details mapped into the response.
+<ResponseField name="order_id" type="integer">
+  The ID of the requested order.
+</ResponseField>
+
+<ResponseField name="press_release_title" type="string">
+  Title of the press release attached to this order.
+</ResponseField>
 
 <ResponseField name="data" type="array">
   <Expandable title="Article Object">
     <ResponseField name="id" type="integer">
-      The article ID.
+      The article record ID.
     </ResponseField>
-    <ResponseField name="url" type="string">
-      The URL of the published article.
+    <ResponseField name="article_url" type="string">
+      The full URL of the published article.
     </ResponseField>
-    <ResponseField name="website_id" type="integer">
-      The ID of the website where the article is published.
+    <ResponseField name="published_at" type="string">
+      Timestamp when the article was published.
     </ResponseField>
     <ResponseField name="website_domain" type="string">
-      The domain of the website where the article is published (e.g., `example.com`).
+      The domain of the website where the article is published (e.g. `example.com`).
     </ResponseField>
   </Expandable>
 </ResponseField>
@@ -45,3 +51,26 @@ curl -H "Authorization: Bearer cw_ext_your_key" \
   "https://app.chainwire.org/api/external-api/v1/orders/123/articles"
 ```
 </RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "order_id": 123,
+  "press_release_title": "Chainwire Launches New Feature",
+  "data": [
+    {
+      "id": 1,
+      "article_url": "https://example.com/chainwire-launches-new-feature",
+      "published_at": "2026-01-20 09:00:00",
+      "website_domain": "example.com"
+    }
+  ]
+}
+```
+```json 404 – Order not found
+{
+  "error": "Not Found",
+  "message": "Order not found or not accessible."
+}
+```
+</ResponseExample>
