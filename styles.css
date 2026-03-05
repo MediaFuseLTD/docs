@@ -1,12 +1,15 @@
-#download-card-container [data-component-part="card-content-container"] {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* Download card - remove border and add hover effect */
+#download-card-container .card {
+  border: none !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-#download-card-container:hover [data-component-part="card-content-container"] {
+#download-card-container:hover .card {
   transform: scale(1.02);
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.15), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
-#download-card-container:active [data-component-part="card-content-container"] {
+#download-card-container:active .card {
   transform: scale(0.98);
 }
