@@ -87,7 +87,7 @@
     "variable": [
         {
             "key": "baseUrl",
-            "value": "https://api.chainwire.org/api/external-api/v1",
+            "value": "https://app.chainwire.org/api/external-api/v1",
             "type": "string"
         }
     ]
