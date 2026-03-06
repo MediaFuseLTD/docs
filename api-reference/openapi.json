@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Chainwire External API",
+    "title": "MediaFuse External API",
     "version": "1.0.0",
-    "description": "The Chainwire External API allows partners to retrieve PR distribution data."
+    "description": "The MediaFuse External API allows partners to retrieve PR distribution data."
   },
   "servers": [
     {
@@ -221,7 +221,7 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "API Key",
-        "description": "Your Chainwire API key, prefixed with `cw_ext_`."
+        "description": "Your MediaFuse API key, prefixed with `cw_ext_`."
       }
     }
   }
