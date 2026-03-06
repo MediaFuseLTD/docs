@@ -24,6 +24,7 @@
             "group": "Getting started",
             "pages": [
               "index",
+              "brands",
               "postman"
             ]
           }
