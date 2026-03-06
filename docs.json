@@ -50,8 +50,8 @@
     ]
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/logo/mediafuse/Logo_MediaFuse.svg",
+    "dark": "/logo/mediafuse/Logo_MediaFuse_Negative.svg"
   },
   "navbar": {
     "links": [
