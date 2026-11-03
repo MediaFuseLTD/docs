@@ -30,6 +30,10 @@ Fetches all orders for all members of your organization. Supports pagination and
   | `all` | All orders (default) |
   | `finished` | Fully distributed orders |
   | `processing` | Orders currently publishing or in publishing_ended state |
+
+  For example, finished orders only: `/orders?status=finished&limit=50&offset=0`
+
+  Drafts, declined orders and orders still in review are never returned, so the total can be lower than the number of orders you see in the dashboard.
 </ParamField>
 
 ### Response
@@ -67,13 +71,33 @@ Fetches all orders for all members of your organization. Supports pagination and
 </ResponseField>
 
 <RequestExample>
-```bash All orders
+```bash Chainwire
 curl -H "Authorization: Bearer cw_ext_your_key" \
   "https://app.chainwire.org/api/external-api/v1/orders?limit=50&offset=0"
 ```
-```bash Finished orders only
+```bash FinanceWire
 curl -H "Authorization: Bearer cw_ext_your_key" \
-  "https://app.chainwire.org/api/external-api/v1/orders?status=finished&limit=50&offset=0"
+  "https://app.financewire.com/api/external-api/v1/orders?limit=50&offset=0"
+```
+```bash CyberNewsWire
+curl -H "Authorization: Bearer cw_ext_your_key" \
+  "https://app.cybernewswire.com/api/external-api/v1/orders?limit=50&offset=0"
+```
+```bash GamingWire
+curl -H "Authorization: Bearer cw_ext_your_key" \
+  "https://app.gamingwire.io/api/external-api/v1/orders?limit=50&offset=0"
+```
+```bash TechnologyWire
+curl -H "Authorization: Bearer cw_ext_your_key" \
+  "https://app.technologywire.com/api/external-api/v1/orders?limit=50&offset=0"
+```
+```bash PlayNewswire
+curl -H "Authorization: Bearer cw_ext_your_key" \
+  "https://app.playnewswire.com/api/external-api/v1/orders?limit=50&offset=0"
+```
+```bash NewsDirect
+curl -H "Authorization: Bearer cw_ext_your_key" \
+  "https://clients.newsdirect.com/api/external-api/v1/orders?limit=50&offset=0"
 ```
 </RequestExample>
 

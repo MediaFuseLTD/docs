@@ -11,10 +11,41 @@ Authorization: Bearer cw_ext_your_api_key_here
 
 ## Base URL
 
-All API requests should be prefixed with the following base URL:
+Every request goes to the base URL of **the brand your API key was issued on**. A key only works on its own brand and returns `401` on the others.
+
+| Brand | Base URL |
+|---|---|
+| Chainwire | `https://app.chainwire.org/api/external-api/v1` |
+| FinanceWire | `https://app.financewire.com/api/external-api/v1` |
+| CyberNewsWire | `https://app.cybernewswire.com/api/external-api/v1` |
+| GamingWire | `https://app.gamingwire.io/api/external-api/v1` |
+| TechnologyWire | `https://app.technologywire.com/api/external-api/v1` |
+| PlayNewswire | `https://app.playnewswire.com/api/external-api/v1` |
+| NewsDirect | `https://clients.newsdirect.com/api/external-api/v1` |
+
+For example, a FinanceWire key:
 
 ```bash
-https://app.chainwire.org/api/external-api/v1
+curl -H "Authorization: Bearer cw_ext_your_key" \
+  "https://app.financewire.com/api/external-api/v1/orders?limit=50"
 ```
 
-To manage your API keys, navigate to the **Organization Details** page within the MediaFuse dashboard.
+See [Our Brands](/brands) for more on each brand.
+
+## Getting an API key
+
+API keys are issued by our team, one per company. Ask your account manager (or [support](mailto:support@chainwire.org)) and tell us which brand you order on. A key covers the orders of everyone in your company's account on that brand.
+
+Keep your key private. If it is exposed or lost, ask us to revoke it and we will issue a new one; the old key stops working immediately.
+
+## Errors
+
+| Status | Meaning |
+|---|---|
+| `401` `Missing or invalid Authorization header.` | No `Authorization: Bearer ...` header was sent. |
+| `401` `Invalid or inactive API key.` | The key is wrong, was revoked, or belongs to a different brand than the base URL. |
+| `429` | Rate limit reached, see below. |
+
+## Rate limits
+
+You can make up to **60 requests per minute**. Above that the API returns `429 Too Many Requests`. Wait the number of seconds in the `Retry-After-Protected` response header before retrying. `X-RateLimit-Remaining-Protected` tells you how many requests you have left in the current minute.

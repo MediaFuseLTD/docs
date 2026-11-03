@@ -1,9 +1,29 @@
 ---
 title: "Our Brands"
-description: "MediaFuse operates two PR distribution platforms. Both share the same API — only the base URL differs."
+description: "MediaFuse runs seven PR newswire brands. They all share the same API - only the base URL differs."
 ---
 
-MediaFuse operates two PR newswire brands. Both use the **same External API endpoints, authentication, and response formats**. The only difference is the base URL.
+Every MediaFuse brand uses the **same External API endpoints, authentication, and response formats**. The only difference is the base URL.
+
+<Warning>
+  **Use the base URL of the brand your API key was issued on.** Each brand has its own accounts and orders, so a FinanceWire key only works on the FinanceWire address and returns `401` everywhere else. If you are not sure which brand your key belongs to, check the email you received it in or ask your account manager.
+</Warning>
+
+On every API reference page, the request examples have a tab for each brand, and the **Try it** playground lets you pick the brand's server from a dropdown.
+
+## All base URLs
+
+| Brand | Base URL |
+|---|---|
+| Chainwire | `https://app.chainwire.org/api/external-api/v1` |
+| FinanceWire | `https://app.financewire.com/api/external-api/v1` |
+| CyberNewsWire | `https://app.cybernewswire.com/api/external-api/v1` |
+| GamingWire | `https://app.gamingwire.io/api/external-api/v1` |
+| TechnologyWire | `https://app.technologywire.com/api/external-api/v1` |
+| PlayNewswire | `https://app.playnewswire.com/api/external-api/v1` |
+| NewsDirect | `https://clients.newsdirect.com/api/external-api/v1` |
+
+---
 
 ## Chainwire
 
@@ -12,12 +32,9 @@ MediaFuse operates two PR newswire brands. Both use the **same External API endp
 
 Crypto & blockchain PR distribution.
 
-**Base URL**
 ```bash
 https://app.chainwire.org/api/external-api/v1
 ```
-
----
 
 ## FinanceWire
 
@@ -26,18 +43,65 @@ https://app.chainwire.org/api/external-api/v1
 
 Finance & markets PR distribution.
 
-**Base URL**
 ```bash
 https://app.financewire.com/api/external-api/v1
 ```
 
----
+## CyberNewsWire
 
-## API Compatibility
+<img src="/logo/cybernewswire/light.png" alt="CyberNewsWire" style={{ height: "40px", marginBottom: "16px" }} className="dark:hidden" />
+<img src="/logo/cybernewswire/dark.png" alt="CyberNewsWire" style={{ height: "40px", marginBottom: "16px" }} className="hidden dark:block" />
 
-All endpoints, parameters, and response shapes documented in this reference work identically for both brands. Simply swap the base URL depending on which platform your API key belongs to.
+Cybersecurity PR distribution.
 
-| Brand | Base URL |
-|---|---|
-| Chainwire | `https://app.chainwire.org/api/external-api/v1` |
-| FinanceWire | `https://app.financewire.com/api/external-api/v1` |
+```bash
+https://app.cybernewswire.com/api/external-api/v1
+```
+
+## GamingWire
+
+<img src="/logo/gamingwire/light.png" alt="GamingWire" style={{ height: "40px", marginBottom: "16px" }} className="dark:hidden" />
+<img src="/logo/gamingwire/dark.png" alt="GamingWire" style={{ height: "40px", marginBottom: "16px" }} className="hidden dark:block" />
+
+Gaming industry PR distribution.
+
+```bash
+https://app.gamingwire.io/api/external-api/v1
+```
+
+## TechnologyWire
+
+<img src="/logo/technologywire/light.png" alt="TechnologyWire" style={{ height: "40px", marginBottom: "16px" }} className="dark:hidden" />
+<img src="/logo/technologywire/dark.png" alt="TechnologyWire" style={{ height: "40px", marginBottom: "16px" }} className="hidden dark:block" />
+
+Technology industry PR distribution.
+
+```bash
+https://app.technologywire.com/api/external-api/v1
+```
+
+## PlayNewswire
+
+<img src="/logo/playnewswire/light.png" alt="PlayNewswire" style={{ height: "40px", marginBottom: "16px" }} className="dark:hidden" />
+<img src="/logo/playnewswire/dark.png" alt="PlayNewswire" style={{ height: "40px", marginBottom: "16px" }} className="hidden dark:block" />
+
+iGaming & betting PR distribution.
+
+```bash
+https://app.playnewswire.com/api/external-api/v1
+```
+
+## NewsDirect
+
+<img src="/logo/newsdirect/light.png" alt="NewsDirect" style={{ height: "40px", marginBottom: "16px" }} className="dark:hidden" />
+<img src="/logo/newsdirect/dark.png" alt="NewsDirect" style={{ height: "40px", marginBottom: "16px" }} className="hidden dark:block" />
+
+Multimedia press releases with targeted industry distribution.
+
+<Note>
+  NewsDirect's API lives on `clients.newsdirect.com`, not `app.newsdirect.com`.
+</Note>
+
+```bash
+https://clients.newsdirect.com/api/external-api/v1
+```

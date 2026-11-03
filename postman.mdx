@@ -42,6 +42,7 @@ We provide a complete Postman collection that includes all of our external API e
 5. Go to the **Authorization** tab for the collection.
 6. Ensure the type is set to **Bearer Token**.
 7. Paste your `cw_ext_...` API key into the Token field.
-8. Save the collection. All requests inside the folder will now automatically inherit this token.
+8. Go to the **Variables** tab and set `baseUrl` to the base URL of the brand your key belongs to (for example `https://app.financewire.com/api/external-api/v1` for FinanceWire). It defaults to Chainwire. All base URLs are listed on [Our Brands](/brands).
+9. Save the collection. All requests inside the folder will now automatically inherit this token and address.
 
 You're ready to start testing!
