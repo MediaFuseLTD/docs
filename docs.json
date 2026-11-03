@@ -8,11 +8,21 @@
     "dark": "#096e56"
   },
   "favicon": "/favicon.svg",
-  "openapi": "/api-reference/openapi.json",
   "api": {
-    "baseUrl": "https://app.chainwire.org/api/external-api/v1",
-    "auth": {
-      "method": "bearer"
+    "openapi": "api-reference/openapi.json",
+    "mdx": {
+      "server": [
+        "https://app.chainwire.org/api/external-api/v1",
+        "https://app.financewire.com/api/external-api/v1",
+        "https://app.cybernewswire.com/api/external-api/v1",
+        "https://app.gamingwire.io/api/external-api/v1",
+        "https://app.technologywire.com/api/external-api/v1",
+        "https://app.playnewswire.com/api/external-api/v1",
+        "https://clients.newsdirect.com/api/external-api/v1"
+      ],
+      "auth": {
+        "method": "bearer"
+      }
     }
   },
   "navigation": {

@@ -7,7 +7,32 @@
   },
   "servers": [
     {
-      "url": "https://app.chainwire.org/api/external-api/v1"
+      "url": "https://app.chainwire.org/api/external-api/v1",
+      "description": "Chainwire"
+    },
+    {
+      "url": "https://app.financewire.com/api/external-api/v1",
+      "description": "FinanceWire"
+    },
+    {
+      "url": "https://app.cybernewswire.com/api/external-api/v1",
+      "description": "CyberNewsWire"
+    },
+    {
+      "url": "https://app.gamingwire.io/api/external-api/v1",
+      "description": "GamingWire"
+    },
+    {
+      "url": "https://app.technologywire.com/api/external-api/v1",
+      "description": "TechnologyWire"
+    },
+    {
+      "url": "https://app.playnewswire.com/api/external-api/v1",
+      "description": "PlayNewswire"
+    },
+    {
+      "url": "https://clients.newsdirect.com/api/external-api/v1",
+      "description": "NewsDirect"
     }
   ],
   "security": [
@@ -127,7 +152,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized — invalid or missing Bearer token."
+            "description": "Unauthorized \u2014 invalid or missing Bearer token."
           },
           "422": {
             "description": "Invalid status value."
@@ -206,7 +231,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized — invalid or missing Bearer token."
+            "description": "Unauthorized \u2014 invalid or missing Bearer token."
           },
           "404": {
             "description": "Order not found or not accessible."
