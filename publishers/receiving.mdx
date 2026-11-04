@@ -1,0 +1,203 @@
+---
+title: "Receiving a press release"
+description: "The request we send to your endpoint, and the answer we expect back."
+---
+
+## Where we send it
+
+We `POST` to the URL you saved as **Custom Url For Live Version** in your dashboard. Without one, we try your WordPress REST routes in this order, moving on only after a `404`:
+
+1. `https://yoursite.com/wp-json/chain-wire-plugin/v1/posts`
+2. `https://yoursite.com/index.php/wp-json/chain-wire-plugin/v1/posts`
+3. `https://yoursite.com/?rest_route=/chain-wire-plugin/v1/posts`
+
+The installation check and test drafts go to **Custom Url For Verification** (default: the same paths ending in `/verification`).
+
+The body is `application/x-www-form-urlencoded`. We wait up to **15 seconds** for your answer, and that includes your verification call to us, so verify straight away and download images after you have answered if your CMS allows it.
+
+## The fields we send
+
+| Field | Type | Meaning |
+|---|---|---|
+| `token` | string | Your key. Compare it with your own key before anything else. |
+| `wire` | string | The brand sending it: `chainwire`, `financewire`, `cybernewswire`, `gamingwire`, `technologywire`, `playnewswire`, `newsdirect`. Decides where you send the verification, see [Verifying](/publishers/verifying#where-to-send-it). |
+| `article_id` | integer | Our id for this press release on your website. Send it back when you verify. |
+| `publish_nonce` | string | One-time code for this request (40 letters and digits). Send it back when you verify. Missing on the installation check. |
+| `press_release_title` | string | Title. |
+| `press_release_html` | string | Body, HTML. Hash it **exactly as received** (see [Verifying](/publishers/verifying)). |
+| `press_release_featured_image` | string | URL of the featured image. Download it and serve your own copy. |
+| `press_release_client_image` | string | URL of the client's logo or author image. |
+| `press_release_tags[]` | array of strings | Categories you can map to your own. |
+| `press_release_kind` | integer | `0` branded, `1` not branded. |
+| `excerpt` | string | Short summary, may be empty. |
+| `verification_token` | string | `0` for a real press release. A long code on the installation check and test drafts: send it back when you verify. |
+| `verification_kind` | string | `post` (publish it), `installation` (publish, then delete it: we only check that the integration works), `draft` (save as an unpublished draft). |
+| `dedupe_key`, `press_release_date` | string | Optional. You may ignore them. |
+
+<Note>
+  The WordPress plugin also receives requests to `/posts/update`, `/post-details` and `/plugin-details`, and remote commands. A custom integration does not need them; answering them with a `404` is fine.
+</Note>
+
+## What to answer
+
+Always answer `200` with JSON. On success:
+
+```json
+{
+  "status": "SUCCESS",
+  "data": {
+    "post_id": "12345",
+    "article_url": "https://yoursite.com/news/your-article-slug",
+    "published_at": "2026-11-04 10:15:00"
+  }
+}
+```
+
+- `article_url` is **required**, also for `installation` and `draft`. It is the public link we show to the client.
+- `published_at` uses the format `Y-m-d H:i:s`.
+- `post_id` is optional: your own id for the post.
+
+When you did not publish, say why, so we can see it on our side:
+
+```json
+{
+  "status": "ERROR",
+  "errors": {
+    "form": "Wrong verification: hash mismatch"
+  }
+}
+```
+
+An HTML page, an empty body or a JSON without `status` (often a caching plugin or a theme printing output) counts as a failed delivery.
+
+## A complete endpoint
+
+Each example receives our request, verifies it with the function from [Verifying](/publishers/verifying), and answers. Replace the publish step with your CMS call.
+
+<CodeGroup>
+```php PHP
+<?php
+// Your endpoint for Chainwire requests, e.g. https://yoursite.com/chainwire/posts (set it as the custom URL in the
+// Chainwire dashboard). Plain PHP; adapt the publish step to your CMS.
+require __DIR__ . '/chainwire_verify.php';
+
+const CHAINWIRE_TOKEN = 'your key from the Chainwire dashboard';
+const CHAINWIRE_SECRET = 'your secret from the Chainwire dashboard';
+
+header('Content-Type: application/json');
+
+function chainwire_answer(array $body): void
+{
+    echo json_encode($body);
+    exit;
+}
+
+$token = getenv('TOKEN') ?: CHAINWIRE_TOKEN;   // getenv: test runner only
+$secret = getenv('SECRET') ?: CHAINWIRE_SECRET;
+$verified = chainwire_verify_article($_POST, $token, $secret, getenv('API_BASE') ?: null);
+if ($verified !== true) {
+    chainwire_answer(['status' => 'ERROR', 'errors' => ['form' => 'Wrong verification: ' . $verified]]);
+}
+
+// Verified: publish with the fields exactly as we sent them. Download the images and store your own copies.
+// verification_kind "installation" = publish, then delete it; "draft" = save as a draft only; "post" = publish.
+$articleUrl = 'https://yoursite.com/news/' . rawurlencode((string)$_POST['article_id']); // your publish call goes here
+
+chainwire_answer([
+    'status' => 'SUCCESS',
+    'data' => [
+        'post_id' => (string)$_POST['article_id'],
+        'article_url' => $articleUrl,
+        'published_at' => gmdate('Y-m-d H:i:s'),
+    ],
+]);
+```
+
+```typescript TypeScript (Node)
+// Your endpoint for Chainwire requests, e.g. https://yoursite.com/chainwire/posts (set it as the custom URL in the
+// Chainwire dashboard). Plain node:http, no framework; adapt the publish step to your CMS.
+import { createServer } from 'node:http';
+import { verifyArticle, type ChainwireRequest } from './chainwireVerify.ts';
+
+const CHAINWIRE_TOKEN = process.env.TOKEN ?? 'your key from the Chainwire dashboard';
+const CHAINWIRE_SECRET = process.env.SECRET ?? 'your secret from the Chainwire dashboard';
+
+createServer(async (req, res) => {
+  const answer = (body: object) => {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(body));
+  };
+  let raw = '';
+  for await (const chunk of req) raw += chunk;
+  // we send application/x-www-form-urlencoded
+  const fields: ChainwireRequest = Object.fromEntries(new URLSearchParams(raw));
+
+  const verified = await verifyArticle(fields, CHAINWIRE_TOKEN, CHAINWIRE_SECRET, process.env.API_BASE || undefined);
+  if (verified !== true) {
+    return answer({ status: 'ERROR', errors: { form: `Wrong verification: ${verified}` } });
+  }
+
+  // Verified: publish with the fields exactly as we sent them. Download the images and store your own copies.
+  // verification_kind "installation" = publish, then delete it; "draft" = save as a draft only; "post" = publish.
+  const articleUrl = `https://yoursite.com/news/${encodeURIComponent(String(fields.article_id))}`; // your publish call
+
+  answer({
+    status: 'SUCCESS',
+    data: {
+      post_id: String(fields.article_id),
+      article_url: articleUrl,
+      published_at: new Date().toISOString().slice(0, 19).replace('T', ' '), // Y-m-d H:i:s, UTC
+    },
+  });
+}).listen(Number(process.env.PORT ?? 8080));
+```
+
+```csharp C# (ASP.NET Core)
+// Your endpoint for Chainwire requests, e.g. https://yoursite.com/chainwire/posts (set it as the custom URL in the
+// Chainwire dashboard). ASP.NET Core minimal API (.NET 8); adapt the publish step to your CMS.
+using System;
+using System.Linq;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+var token = Environment.GetEnvironmentVariable("TOKEN") ?? "your key from the Chainwire dashboard";
+var secret = Environment.GetEnvironmentVariable("SECRET") ?? "your secret from the Chainwire dashboard";
+var apiBase = Environment.GetEnvironmentVariable("API_BASE"); // test runner only
+
+var app = WebApplication.CreateBuilder(args).Build();
+
+app.MapPost("/chainwire/posts", async (HttpRequest request) =>
+{
+    // we send application/x-www-form-urlencoded
+    var form = await request.ReadFormAsync();
+    var fields = form.ToDictionary(f => f.Key, f => f.Value.ToString());
+
+    var failure = await ChainwireVerify.VerifyArticleAsync(fields, token, secret,
+        string.IsNullOrEmpty(apiBase) ? null : apiBase);
+    if (failure != null)
+        return Results.Json(new { status = "ERROR", errors = new { form = "Wrong verification: " + failure } });
+
+    // Verified: publish with the fields exactly as we sent them. Download the images and store your own copies.
+    // verification_kind "installation" = publish, then delete it; "draft" = save as a draft only; "post" = publish.
+    var articleId = fields.TryGetValue("article_id", out var id) ? id : "";
+    var articleUrl = "https://yoursite.com/news/" + Uri.EscapeDataString(articleId); // your publish call goes here
+
+    return Results.Json(new
+    {
+        status = "SUCCESS",
+        data = new
+        {
+            post_id = articleId,
+            article_url = articleUrl,
+            published_at = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
+        },
+    });
+});
+
+app.Run();
+```
+</CodeGroup>
+
+<Tip>
+  These endpoints were run against our real verification code with a real press release from our test system: each one received our request, verified it and answered `SUCCESS`.
+</Tip>

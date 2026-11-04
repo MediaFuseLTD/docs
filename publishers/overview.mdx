@@ -1,0 +1,43 @@
+---
+title: "Publisher integration"
+description: "How press releases reach your website, and how to build a custom integration that receives them safely."
+---
+
+This section is for **publishers**: websites that publish the press releases we distribute. If you buy press releases and want your order data, see the [client API](/api-reference/authentication) instead.
+
+## Ways to receive press releases
+
+| Option | Best for | What you do |
+|---|---|---|
+| **WordPress plugin** (recommended) | WordPress sites | Install **Chainwire Integration** from the WordPress plugin directory, paste your key and secret. The plugin does everything on this page for you. |
+| **Custom integration** | Any other CMS or your own backend | Build one endpoint that receives our request, verifies it with us, publishes, and answers. This section explains how, with tested code for PHP, TypeScript and C#. |
+| **RSS** | Reading releases into your own system | Ask us for an RSS channel for your website. |
+| **Manual** | When nothing can be automated | You get each release by email and paste the published link into your dashboard. |
+
+<Note>
+  This section replaces the old PDF "Chainwire API Documentation 1.1.2". Integrations built from that PDF need the changes listed in [Troubleshooting](/publishers/troubleshooting#what-changed-since-the-pdf-1-1-2).
+</Note>
+
+## How a custom integration works
+
+1. We send the press release to your endpoint, together with your **key** (`token`).
+2. While handling that request, you ask us whether it really is ours (**verification**). Anyone who learns your key could otherwise post to your endpoint in our name, but only we can answer the verification correctly, because the answer is built with your **secret**, which we never send.
+3. You publish, and answer our request with the link. We record it, update your statistics and finances, and tell the client.
+
+## What you need
+
+- **Your key and secret.** In your publisher dashboard, pick your website and open **Manage Plugin Integration**, then click **Generate!**. The keys are shown **only once**, so copy them right away. Generating again replaces them, and the old pair stops working immediately.
+- **Your endpoint URL.** By default we post to `https://yoursite.com/wp-json/chain-wire-plugin/v1/posts`. For a custom integration, set your own URLs in the same window: **Custom Url For Live Version** (real press releases) and **Custom Url For Verification** (the installation check and test drafts), then **Save Custom Urls**. Both may point to the same endpoint.
+- **Our IP allowed through your firewall.** Our requests come from **`8.234.199.170`**. Add it to the allowlist of your firewall, CDN or WAF (Cloudflare, Wordfence, Sucuri, LiteSpeed). The old address `159.89.237.239` from the PDF is no longer used.
+
+<CardGroup cols={3}>
+  <Card title="Receiving a press release" icon="inbox" href="/publishers/receiving">
+    The fields we send and the answer we expect.
+  </Card>
+  <Card title="Verifying" icon="shield-check" href="/publishers/verifying">
+    The algorithm, with tested PHP, TypeScript and C# code.
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/publishers/troubleshooting">
+    "Verification failed", hash mismatches, and what changed.
+  </Card>
+</CardGroup>
