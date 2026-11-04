@@ -1,0 +1,54 @@
+---
+title: "Troubleshooting"
+description: "Why a verification fails, why the hash does not match, and what changed since the old PDF."
+---
+
+## Our answer has a hash, but it does not match mine
+
+The server verified the press release, so your content hash was right. The crc32 differs because **your key or secret is not the pair we have** for your website:
+
+- New keys were generated in your dashboard (by you, or by us for security: several sites got new keys in October 2026), and your integration still uses the old pair. Generate keys again in **Manage Plugin Integration**, update your integration, and try again.
+- The key and secret are swapped, or have a space or line break at the end.
+- You compute `crc32(key + secret + hash)` in a different order. It is `crc32(content_hash + key + secret)`.
+- In JavaScript, the crc32 is signed. End the calculation with `>>> 0`.
+- You verify against the wrong brand. Use the host for the `wire` field, see [Where to send it](/publishers/verifying#where-to-send-it).
+
+## We answer 400 "Verification failed"
+
+We give the same answer for every refusal, so check each of these:
+
+| Cause | Fix |
+|---|---|
+| You hashed the HTML after your CMS changed it (saved, sanitized, re-encoded, image added) | Hash `press_release_html` exactly as received, before any processing |
+| You verify after you answered our request (background job, queue, cron) | Verify inside the request handler, before answering |
+| You verify twice for one delivery (a retry, or a second step that verifies again) | Verify once, and keep the result |
+| `publish_nonce` not sent, or reused from an earlier request | Send back the `publish_nonce` of the current request |
+| `article_id` or `verification_token` not sent back as received | Send both exactly as we sent them |
+| Fields not wrapped in `form[...]` | Send `form[article_id]=...&form[press_release_html_hash]=...` (form-encoded, like our examples) |
+| More than 30 verifications a minute from your IP | Slow down; we answer `429` in that case |
+
+## We never reach your endpoint
+
+- Our IP **`8.234.199.170`** is blocked by your firewall, CDN or WAF. Add it to the allowlist.
+- Your endpoint answers an HTML page (login, cache, error page) instead of JSON.
+- Your endpoint takes longer than about 15 seconds.
+
+## The installation check fails
+
+The check sends a short test text with a long `verification_token`. Verify it exactly like a real press release (send back that `verification_token`; there is no `publish_nonce`), then answer `SUCCESS` with an `article_url`. For `verification_kind: installation`, delete the test post afterwards.
+
+## What changed since the PDF 1.1.2
+
+The formula is the same: `crc32(md5(letters and digits of the HTML) + key + secret)`. What changed is when and how we accept it:
+
+| Since | Change | What to do |
+|---|---|---|
+| Oct 2026 | The content hash is **checked**. Before, we answered any hash. | Hash the HTML exactly as received |
+| Oct 2026 | Verification is accepted **only during our delivery**, **once**, or with a valid `publish_nonce` | Verify inside the request handler; send back `publish_nonce` |
+| Oct 2026 | New `publish_nonce` field in every delivery | Send it back in `form[publish_nonce]` |
+| Oct 2026 | Keys are shown only once in the dashboard, and many sites got new keys | Use the current pair; generate again if unsure |
+| 2026 | We send releases from several brands; the `wire` field says which one | Verify against that brand's host |
+| 2026 | Our IP is `8.234.199.170` (not `159.89.237.239`) | Update your allowlist |
+| 2026 | One refusal answer for every reason: `400 Verification failed` | Use the table above |
+
+Still stuck? Write to [support@chainwire.org](mailto:support@chainwire.org) with your website, the `article_id` and the time of the attempt. We can see why a verification was refused on our side.

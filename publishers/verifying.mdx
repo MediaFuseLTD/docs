@@ -1,0 +1,417 @@
+---
+title: "Verifying a press release"
+description: "Ask us whether a request really is ours before you publish it. Algorithm, rules, and tested PHP, TypeScript and C# code."
+---
+
+Every press release must be verified before you publish it. Your key travels in each request, so anyone who learns it could post to your endpoint in our name. The verification answer is built with your **secret**, which never travels, so only we can produce it.
+
+## The algorithm
+
+<Steps>
+  <Step title="Check the key">
+    `token` in our request must equal your key. Compare in constant time. Different: stop and answer `ERROR`.
+  </Step>
+  <Step title="Hash the body">
+    Take `press_release_html` **exactly as you received it**, keep only the ASCII letters and digits (`A-Z`, `a-z`, `0-9`), and take the md5 of that, as lowercase hex. This is the **content hash**.
+
+    ```php
+    $content_hash = md5(preg_replace('/[^A-Za-z0-9]/', '', $press_release_html));
+    ```
+  </Step>
+  <Step title="Ask us">
+    `POST` to `https://<our host>/api/wp-plugin/verify-article`, form-encoded, every field inside `form[...]`:
+
+    | Field | Value |
+    |---|---|
+    | `form[article_id]` | `article_id` from our request |
+    | `form[press_release_html_hash]` | the content hash |
+    | `form[verification_token]` | `verification_token` from our request (`0` for a real press release) |
+    | `form[publish_nonce]` | `publish_nonce` from our request |
+  </Step>
+  <Step title="Check our answer">
+    We answer `200` with `{"data": {"hash": 1234567890, ...}}`. Compute `crc32(content_hash + key + secret)` yourself, as an **unsigned** 32-bit integer (the same as PHP's `crc32()`). Equal: the press release is ours and unchanged, publish it. Different: do not publish.
+  </Step>
+</Steps>
+
+## The rules
+
+<Warning>
+  These rules have applied since October 2026. Integrations built on the old PDF break on them; see [Troubleshooting](/publishers/troubleshooting).
+</Warning>
+
+- **Hash the HTML exactly as received.** Not after your CMS, editor or sanitizer saved it, not after you added an image or changed quotes. Hash first, then process.
+- **Verify while you handle our request**, before you answer it. Without a valid `publish_nonce` we accept a verification only while that delivery is still running, and only once. A verification from a later job, a queue or a cron is refused.
+- **Always send back `publish_nonce`.** It is valid for **15 minutes** and works **once**, for this press release on your website only. It makes verification independent of timing, but each code can be used only one time.
+- **Compare crc32 as unsigned.** In JavaScript, `|` and `^` give signed numbers: end with `>>> 0`. In C#, use `uint`.
+- **Use your current key pair.** If you generate new keys in the dashboard, update them in your integration at the same moment.
+
+## Where to send it
+
+Send the verification to the host of the brand named in the `wire` field of our request. A key pair belongs to one website on one brand.
+
+| `wire` | Host |
+|---|---|
+| `chainwire` (or empty) | `https://app.chainwire.org` |
+| `financewire` | `https://app.financewire.com` |
+| `cybernewswire` | `https://app.cybernewswire.com` |
+| `gamingwire` | `https://app.gamingwire.io` |
+| `technologywire` | `https://app.technologywire.com` |
+| `playnewswire` | `https://app.playnewswire.com` |
+| `newsdirect` | `https://clients.newsdirect.com` |
+
+## What we answer
+
+<CodeGroup>
+```json 200 Verified
+{
+  "data": {
+    "hash": 2205831423,
+    "debug_requested": false
+  }
+}
+```
+
+```json 400 Not verified
+{
+  "status": "error",
+  "message": "Verification failed",
+  "errors": []
+}
+```
+</CodeGroup>
+
+`Verification failed` is the only answer for every refusal (wrong hash, late, repeated, unknown article), so it gives nothing away to someone probing your key. [Troubleshooting](/publishers/troubleshooting) lists the causes. You can make up to **30 verification requests a minute** from one IP address.
+
+## The code
+
+One function per language: it checks the key, hashes the body, calls us, and compares the answer. It returns `true` (C#: `null`) when you may publish, otherwise the reason. No packages needed.
+
+<CodeGroup>
+```php PHP 7.4+
+<?php
+// Chainwire / MediaFuse custom integration: verify a press release before publishing it.
+// PHP 7.4+, needs ext-curl and ext-json. Docs: https://docs.mediafuse.org/publishers/verifying
+
+/** API host to call back, from the `wire` field of our request. */
+function chainwire_callback_base(?string $wire): string
+{
+    $hosts = [
+        'chainwire' => 'https://app.chainwire.org',
+        'financewire' => 'https://app.financewire.com',
+        'cybernewswire' => 'https://app.cybernewswire.com',
+        'gamingwire' => 'https://app.gamingwire.io',
+        'technologywire' => 'https://app.technologywire.com',
+        'techwire' => 'https://app.technologywire.com',
+        'playnewswire' => 'https://app.playnewswire.com',
+        'newsdirect' => 'https://clients.newsdirect.com',
+    ];
+    return $hosts[(string)$wire] ?? $hosts['chainwire'];
+}
+
+/** md5 of the letters and digits of press_release_html, exactly as you received it. */
+function chainwire_content_hash(string $pressReleaseHtml): string
+{
+    return md5(preg_replace('/[^A-Za-z0-9]/', '', $pressReleaseHtml));
+}
+
+/** The hash we answer with: crc32(content_hash . token . secret), an unsigned 32-bit integer. */
+function chainwire_expected_hash(string $contentHash, string $token, string $secret): int
+{
+    return crc32($contentHash . $token . $secret);
+}
+
+/**
+ * Ask Chainwire whether this request really is our press release. Call it while you handle our request,
+ * before you answer it, and only once per request.
+ *
+ * @param array $request  the fields we POSTed to you ($_POST)
+ * @param string $token   your key from the Chainwire dashboard
+ * @param string $secret  your secret from the Chainwire dashboard
+ * @param string|null $apiBase override the callback host (tests only)
+ * @return true|string    true when you may publish, otherwise the reason
+ */
+function chainwire_verify_article(array $request, string $token, string $secret, ?string $apiBase = null)
+{
+    if (!hash_equals($token, (string)($request['token'] ?? ''))) {
+        return 'wrong token';
+    }
+    $contentHash = chainwire_content_hash((string)($request['press_release_html'] ?? ''));
+    $form = [
+        'article_id' => (string)($request['article_id'] ?? ''),
+        'press_release_html_hash' => $contentHash,
+        'verification_token' => (string)($request['verification_token'] ?? ''),
+        'publish_nonce' => (string)($request['publish_nonce'] ?? ''),
+    ];
+    $url = ($apiBase ?? chainwire_callback_base($request['wire'] ?? null)) . '/api/wp-plugin/verify-article';
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => http_build_query(['form' => $form]),
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 15,
+        CURLOPT_HTTPHEADER => ['Accept: application/json'],
+    ]);
+    $body = curl_exec($ch);
+    $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+    if ($body === false) {
+        return 'network error: ' . $error;
+    }
+    if ($status !== 200) {
+        return 'not verified (HTTP ' . $status . '): ' . substr($body, 0, 200);
+    }
+    $data = json_decode($body, true);
+    if (!isset($data['data']['hash'])) {
+        return 'unexpected response: ' . substr($body, 0, 200);
+    }
+    if ((int)$data['data']['hash'] !== chainwire_expected_hash($contentHash, $token, $secret)) {
+        return 'hash mismatch: your key or secret differs from the one in the Chainwire dashboard';
+    }
+    return true;
+}
+```
+
+```typescript TypeScript (Node 18+)
+// Chainwire / MediaFuse custom integration: verify a press release before publishing it.
+// Node 18+ (global fetch), no dependencies. Docs: https://docs.mediafuse.org/publishers/verifying
+import { createHash, timingSafeEqual } from 'node:crypto';
+
+const HOSTS: Record<string, string> = {
+  chainwire: 'https://app.chainwire.org',
+  financewire: 'https://app.financewire.com',
+  cybernewswire: 'https://app.cybernewswire.com',
+  gamingwire: 'https://app.gamingwire.io',
+  technologywire: 'https://app.technologywire.com',
+  techwire: 'https://app.technologywire.com',
+  playnewswire: 'https://app.playnewswire.com',
+  newsdirect: 'https://clients.newsdirect.com',
+};
+
+/** API host to call back, from the `wire` field of our request. */
+export function callbackBase(wire?: string): string {
+  return HOSTS[wire ?? ''] ?? HOSTS.chainwire;
+}
+
+/** md5 of the letters and digits of press_release_html, exactly as you received it. */
+export function contentHash(pressReleaseHtml: string): string {
+  return createHash('md5').update(pressReleaseHtml.replace(/[^A-Za-z0-9]/g, '')).digest('hex');
+}
+
+const CRC_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    table[n] = c >>> 0;
+  }
+  return table;
+})();
+
+/** CRC-32 (IEEE), same as PHP's crc32(): an unsigned 32-bit integer. */
+export function crc32(text: string): number {
+  let crc = 0xffffffff;
+  for (const byte of Buffer.from(text, 'utf8')) crc = CRC_TABLE[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+/** The hash we answer with: crc32(content_hash + token + secret). */
+export function expectedHash(hash: string, token: string, secret: string): number {
+  return crc32(hash + token + secret);
+}
+
+function sameText(a: string, b: string): boolean {
+  const x = Buffer.from(a);
+  const y = Buffer.from(b);
+  return x.length === y.length && timingSafeEqual(x, y);
+}
+
+/** The fields we POST to you (application/x-www-form-urlencoded). */
+export interface ChainwireRequest {
+  token?: string;
+  wire?: string;
+  article_id?: string;
+  press_release_html?: string;
+  verification_token?: string;
+  publish_nonce?: string;
+  [field: string]: unknown;
+}
+
+/**
+ * Ask Chainwire whether this request really is our press release. Call it while you handle our request,
+ * before you answer it, and only once per request. Resolves to true when you may publish, otherwise the reason.
+ */
+export async function verifyArticle(
+  request: ChainwireRequest,
+  token: string,
+  secret: string,
+  apiBase?: string,
+): Promise<true | string> {
+  if (!sameText(token, String(request.token ?? ''))) return 'wrong token';
+  const hash = contentHash(String(request.press_release_html ?? ''));
+  const form = new URLSearchParams({
+    'form[article_id]': String(request.article_id ?? ''),
+    'form[press_release_html_hash]': hash,
+    'form[verification_token]': String(request.verification_token ?? ''),
+    'form[publish_nonce]': String(request.publish_nonce ?? ''),
+  });
+  let response: Response;
+  try {
+    response = await fetch(`${apiBase ?? callbackBase(request.wire)}/api/wp-plugin/verify-article`, {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: form,
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch (error) {
+    return `network error: ${(error as Error).message}`;
+  }
+  const body = await response.text();
+  if (response.status !== 200) return `not verified (HTTP ${response.status}): ${body.slice(0, 200)}`;
+  let received: unknown;
+  try {
+    received = JSON.parse(body)?.data?.hash;
+  } catch {
+    received = undefined;
+  }
+  if (typeof received !== 'number') return `unexpected response: ${body.slice(0, 200)}`;
+  if (received !== expectedHash(hash, token, secret)) {
+    return 'hash mismatch: your key or secret differs from the one in the Chainwire dashboard';
+  }
+  return true;
+}
+```
+
+```csharp C# (.NET 6+)
+// Chainwire / MediaFuse custom integration: verify a press release before publishing it.
+// .NET 6+, no packages. Docs: https://docs.mediafuse.org/publishers/verifying
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+public static class ChainwireVerify
+{
+    private static readonly HttpClient Http = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+
+    private static readonly Dictionary<string, string> Hosts = new Dictionary<string, string>
+    {
+        ["chainwire"] = "https://app.chainwire.org",
+        ["financewire"] = "https://app.financewire.com",
+        ["cybernewswire"] = "https://app.cybernewswire.com",
+        ["gamingwire"] = "https://app.gamingwire.io",
+        ["technologywire"] = "https://app.technologywire.com",
+        ["techwire"] = "https://app.technologywire.com",
+        ["playnewswire"] = "https://app.playnewswire.com",
+        ["newsdirect"] = "https://clients.newsdirect.com",
+    };
+
+    /// <summary>API host to call back, from the `wire` field of our request.</summary>
+    public static string CallbackBase(string? wire) =>
+        wire != null && Hosts.TryGetValue(wire, out var host) ? host : Hosts["chainwire"];
+
+    /// <summary>md5 of the letters and digits of press_release_html, exactly as you received it.</summary>
+    public static string ContentHash(string pressReleaseHtml)
+    {
+        var alphanumeric = Regex.Replace(pressReleaseHtml, "[^A-Za-z0-9]", "");
+        using var md5 = MD5.Create();
+        var digest = md5.ComputeHash(Encoding.UTF8.GetBytes(alphanumeric));
+        return BitConverter.ToString(digest).Replace("-", "").ToLowerInvariant();
+    }
+
+    private static readonly uint[] CrcTable = BuildCrcTable();
+
+    private static uint[] BuildCrcTable()
+    {
+        var table = new uint[256];
+        for (uint n = 0; n < 256; n++)
+        {
+            var c = n;
+            for (var k = 0; k < 8; k++) c = (c & 1) != 0 ? 0xEDB88320u ^ (c >> 1) : c >> 1;
+            table[n] = c;
+        }
+        return table;
+    }
+
+    /// <summary>CRC-32 (IEEE), same as PHP's crc32(): an unsigned 32-bit integer.</summary>
+    public static uint Crc32(string text)
+    {
+        var crc = 0xFFFFFFFFu;
+        foreach (var b in Encoding.UTF8.GetBytes(text)) crc = CrcTable[(crc ^ b) & 0xFF] ^ (crc >> 8);
+        return crc ^ 0xFFFFFFFFu;
+    }
+
+    /// <summary>The hash we answer with: crc32(content_hash + token + secret).</summary>
+    public static uint ExpectedHash(string contentHash, string token, string secret) =>
+        Crc32(contentHash + token + secret);
+
+    /// <summary>
+    /// Ask Chainwire whether this request really is our press release. Call it while you handle our request,
+    /// before you answer it, and only once per request. Returns null when you may publish, otherwise the reason.
+    /// </summary>
+    /// <param name="request">the form fields we POSTed to you</param>
+    /// <param name="token">your key from the Chainwire dashboard</param>
+    /// <param name="secret">your secret from the Chainwire dashboard</param>
+    /// <param name="apiBase">override the callback host (tests only)</param>
+    public static async Task<string?> VerifyArticleAsync(
+        IReadOnlyDictionary<string, string> request, string token, string secret, string? apiBase = null)
+    {
+        string Field(string name) => request.TryGetValue(name, out var value) ? value ?? "" : "";
+
+        if (!CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(token), Encoding.UTF8.GetBytes(Field("token"))))
+            return "wrong token";
+
+        var hash = ContentHash(Field("press_release_html"));
+        var form = new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["form[article_id]"] = Field("article_id"),
+            ["form[press_release_html_hash]"] = hash,
+            ["form[verification_token]"] = Field("verification_token"),
+            ["form[publish_nonce]"] = Field("publish_nonce"),
+        });
+        var url = (apiBase ?? CallbackBase(Field("wire"))) + "/api/wp-plugin/verify-article";
+
+        string body;
+        int status;
+        try
+        {
+            using var message = new HttpRequestMessage(HttpMethod.Post, url) { Content = form };
+            message.Headers.Accept.ParseAdd("application/json");
+            using var response = await Http.SendAsync(message);
+            status = (int)response.StatusCode;
+            body = await response.Content.ReadAsStringAsync();
+        }
+        catch (Exception e) when (e is HttpRequestException || e is TaskCanceledException)
+        {
+            return "network error: " + e.Message;
+        }
+
+        var preview = body.Length > 200 ? body.Substring(0, 200) : body;
+        if (status != 200) return $"not verified (HTTP {status}): {preview}";
+
+        long received;
+        try
+        {
+            using var json = JsonDocument.Parse(body);
+            received = json.RootElement.GetProperty("data").GetProperty("hash").GetInt64();
+        }
+        catch (Exception e) when (e is JsonException || e is KeyNotFoundException || e is InvalidOperationException || e is FormatException)
+        {
+            return "unexpected response: " + preview;
+        }
+
+        if (received != ExpectedHash(hash, token, secret))
+            return "hash mismatch: your key or secret differs from the one in the Chainwire dashboard";
+        return null;
+    }
+}
+```
+</CodeGroup>
+
+<Tip>
+  All three give the same content hash and crc32 as our server on test texts with entities, Polish letters and emoji, and were run against our real verification service: a real press release verifies, while a wrong secret, an edited body and a repeated verification are refused. A complete endpoint that uses them is on [Receiving a press release](/publishers/receiving#a-complete-endpoint).
+</Tip>
