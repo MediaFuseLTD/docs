@@ -1,0 +1,121 @@
+---
+title: "WordPress plugin"
+description: "Set up the free Chainwire Integration plugin so press releases publish on your WordPress site automatically."
+---
+
+The **Chainwire Integration** plugin is free and is all a WordPress site needs to receive our press releases. It works for every MediaFuse brand (Chainwire, FinanceWire, CyberNewsWire, GamingWire, TechnologyWire, PlayNewsWire, News Direct). You do not need any other plugin, RSS importer or paid tool.
+
+<Tip>
+  Prefer a file? Download this guide as a PDF: [MediaFuse WordPress plugin guide (PDF)](/files/mediafuse-wordpress-plugin-guide.pdf).
+</Tip>
+
+## Before you start
+
+- **A publisher account.** We create it for you and send you the login. Your website is connected to the account by us, so you only need to log in. If you have no login yet, ask your MediaFuse contact.
+- **WordPress admin access** to the site, to install the plugin.
+- **Our IP allowed through your firewall:** **`8.234.199.170`** (see [Allow our IP address](#allow-our-ip-address)).
+
+Setup takes about 10 minutes per website.
+
+## Step 1: Install the plugin
+
+1. In your WordPress admin, go to **Plugins > Add New Plugin**.
+2. Search for **Chainwire Integration**.
+3. Click **Install Now**, then **Activate**.
+
+Or download it from [wordpress.org/plugins/chainwire-integration](https://wordpress.org/plugins/chainwire-integration/). Always keep it on the latest version.
+
+## Step 2: Generate your key and secret
+
+1. Log in to your publisher dashboard.
+2. Pick your website in the website selector at the top.
+3. Click **Manage Plugin Integration**.
+4. Under **2. Generate Tokens**, click **Generate!**.
+5. Copy the **Key** and the **Secret** right away.
+
+<Warning>
+  The key and secret are shown **only once**. If you close the window before copying them, click **Generate!** again. Generating again replaces the old pair, and the old pair stops working immediately.
+</Warning>
+
+Each website has its own key and secret. If you run several websites, repeat this step for each one.
+
+## Step 3: Paste them into the plugin
+
+1. In WordPress, go to **Settings > Chainwire**.
+2. Paste the key into **Your Key** and the secret into **Your Secret**. Check that no space was copied at the end.
+3. Choose the **Default Post Status**: **Publish** (recommended, press releases go live automatically) or **Draft** / **Pending** if you want to review each one first.
+4. For each brand, pick the **Main Category** (and any **Additional Categories**) the press releases should be published in. For example, a "News" or "Press Releases" category.
+5. Click **Save all changes**.
+
+## Step 4: Test it
+
+Back in your dashboard, in the same **Manage Plugin Integration** window:
+
+1. Under **3. Test Integration**, click **Verify Installation**. You should see **Test Successful**.
+2. Click **Create Test Draft**. A link to a draft post on your site appears. Open it to see how a press release will look, then delete the draft.
+
+When both work, you are done. Press releases now publish on your site automatically, and the link is sent back to us without anything else to do on your side.
+
+## Where do the press releases appear?
+
+In the categories you chose in Step 3, with the post status you chose. If you want press releases only in a news section, choose that section's category as the **Main Category**. If you agreed with us on homepage placement, make sure that category (or your homepage settings) shows those posts on the homepage.
+
+<Note>
+  The full press release must be published on your website. Do not replace it with a link back to our site: we need a URL on your website for every release.
+</Note>
+
+## Optional settings
+
+| Setting | What it does |
+|---|---|
+| **Use client logo instead of featured image** | Uses the company logo as the post's featured image. |
+| **Add featured image to the post content** | Only if your theme does **not** show featured images on posts. |
+| **Add tags to the post** | Adds the press release's tags to the post. |
+| **Fill SEO meta-tags automatically** | Shown when Yoast SEO is installed. Fills the Yoast title and description. |
+| **Polylang Language For Post** | Shown when Polylang is installed. The language the posts are created in. |
+
+## Allow our IP address
+
+Our requests come from **`8.234.199.170`**. If a firewall, CDN or security plugin blocks it, the test in Step 4 fails and nothing is published.
+
+<AccordionGroup>
+  <Accordion title="Cloudflare">
+    1. Open your site in Cloudflare and go to **Security > WAF > Tools**.
+    2. Under **IP Access Rules**, enter `8.234.199.170`, choose **Allow**, and apply it to **This website** (or all websites in the account).
+    3. Click **Add**.
+  </Accordion>
+  <Accordion title="Wordfence">
+    1. Go to **Wordfence > Firewall > All Firewall Options**.
+    2. In **Allowlisted IP addresses that bypass all rules**, add `8.234.199.170` on a new line.
+    3. Click **Save Changes**.
+    4. If Wordfence already blocked us, check **Wordfence > Firewall > Blocking** and remove the block, and allowlist the path `/wp-json/chain-wire-plugin/v1/posts`.
+  </Accordion>
+  <Accordion title="Sucuri, LiteSpeed or a server firewall">
+    Add `8.234.199.170` to the allowlist (or "whitelist") of the firewall. For a hosting firewall you cannot change, send the IP to your host's support and ask them to allow it.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  The old IP address `159.89.237.239` in the 2024 PDF "Chainwire API Documentation 1.1.2" is no longer used. You can remove it.
+</Note>
+
+## Common problems
+
+### Verify Installation fails
+
+- The key or secret is wrong, swapped, or has a space at the end. Generate a new pair (Step 2) and paste it again (Step 3).
+- Our IP is blocked. See [Allow our IP address](#allow-our-ip-address).
+- The WordPress REST API is off. Open `https://yoursite.com/wp-json/chain-wire-plugin/v1/posts` in your browser. If you get a "page not found" error instead of a short JSON message, go to **Settings > Permalinks** and click **Save Changes** without changing anything. That turns the REST API back on.
+- A security plugin blocks `/wp-json/`. Allow the path `/wp-json/chain-wire-plugin/v1/posts` for our IP.
+
+### Press releases stopped arriving
+
+- Someone clicked **Generate!** again, or we replaced the keys for security. Generate a new pair and paste it into the plugin.
+- The plugin is out of date. Update it in **Plugins**.
+- A firewall rule changed and now blocks our IP.
+
+Still stuck? Reply to your MediaFuse contact with your website address and a screenshot of the error.
+
+## Not on WordPress?
+
+See [Publisher integration](/publishers/overview) for a custom integration, RSS, or manual publishing.
