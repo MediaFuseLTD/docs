@@ -19,6 +19,10 @@ Setup takes about 10 minutes per website.
 2. Search for **Chainwire Integration**.
 3. Click **Install Now**, then **Activate**.
 
+<Frame caption="Plugins > Add New Plugin, search for Chainwire Integration.">
+  ![Chainwire Integration in the WordPress plugin search](/images/wordpress-plugin/wordpress-add-plugin.png)
+</Frame>
+
 Or download it from [wordpress.org/plugins/chainwire-integration](https://wordpress.org/plugins/chainwire-integration/). Always keep it on the latest version.
 
 ## Step 2: Generate your key and secret
@@ -28,6 +32,10 @@ Or download it from [wordpress.org/plugins/chainwire-integration](https://wordpr
 3. Click **Manage Plugin Integration**.
 4. Under **2. Generate Tokens**, click **Generate!**.
 5. Copy the **Key** and the **Secret** right away.
+
+<Frame caption="Manage Plugin Integration opens this window. Your key and secret appear under 2. Generate Tokens.">
+  ![Manage Plugin window in the publisher dashboard](/images/wordpress-plugin/dashboard-manage-plugin.png)
+</Frame>
 
 <Warning>
   The key and secret are shown **only once**. If you close the window before copying them, click **Generate!** again. Generating again replaces the old pair, and the old pair stops working immediately.
@@ -43,12 +51,20 @@ Each website has its own key and secret. If you run several websites, repeat thi
 4. For each brand, pick the **Main Category** (and any **Additional Categories**) the press releases should be published in. For example, a "News" or "Press Releases" category.
 5. Click **Save all changes**.
 
+<Frame caption="The plugin settings under Settings > Chainwire. The current version shows a Main Category and Additional Categories for each brand.">
+  ![Chainwire plugin settings page in WordPress](/images/wordpress-plugin/plugin-settings-menu.png)
+</Frame>
+
 ## Step 4: Test it
 
 Back in your dashboard, in the same **Manage Plugin Integration** window:
 
 1. Under **3. Test Integration**, click **Verify Installation**. You should see **Test Successful**.
 2. Click **Create Test Draft**. A link to a draft post on your site appears. Open it to see how a press release will look, then delete the draft.
+
+<Frame caption="Verify Installation and Create Test Draft, under 3. Test Integration.">
+  ![Test Integration buttons in the Manage Plugin window](/images/wordpress-plugin/dashboard-test-integration.png)
+</Frame>
 
 When both work, you are done. Press releases now publish on your site automatically, and the link is sent back to us without anything else to do on your side.
 
@@ -79,15 +95,23 @@ Our requests come from **`8.234.199.170`**. If a firewall, CDN or security plugi
     1. Open your site in Cloudflare and go to **Security > WAF > Tools**.
     2. Under **IP Access Rules**, enter `8.234.199.170`, choose **Allow**, and apply it to **This website** (or all websites in the account).
     3. Click **Add**.
+
+    ![Cloudflare IP Access Rules with 8.234.199.170 set to Allow](/images/wordpress-plugin/cloudflare-ip-access-rules.png)
   </Accordion>
   <Accordion title="Wordfence">
     1. Go to **Wordfence > Firewall > All Firewall Options**.
     2. In **Allowlisted IP addresses that bypass all rules**, add `8.234.199.170` on a new line.
     3. Click **Save Changes**.
     4. If Wordfence already blocked us, check **Wordfence > Firewall > Blocking** and remove the block, and allowlist the path `/wp-json/chain-wire-plugin/v1/posts`.
+
+    ![Wordfence allowlisted IP addresses with 8.234.199.170](/images/wordpress-plugin/wordfence-allowlist.png)
   </Accordion>
   <Accordion title="Sucuri, LiteSpeed or a server firewall">
     Add `8.234.199.170` to the allowlist (or "whitelist") of the firewall. For a hosting firewall you cannot change, send the IP to your host's support and ask them to allow it.
+
+    In the LiteSpeed WebAdmin console: **Configuration > Server > Security**, edit **Access Control**, append `8.234.199.170T` to the comma-separated **Allowed List** (the `T` marks it as trusted, so the anti-DDoS rules skip it), click **Save**, then **Actions > Graceful Restart**.
+
+    ![LiteSpeed Access Control allowed list](/images/wordpress-plugin/litespeed-allowlist.png)
   </Accordion>
 </AccordionGroup>
 

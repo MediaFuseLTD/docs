@@ -4,7 +4,7 @@
     python3 scripts/build_pdf.py publishers/wordpress-plugin.mdx files/mediafuse-wordpress-plugin-guide.pdf
 
 Needs Google Chrome or Chromium. Handles only what our guide pages use: headings, paragraphs, lists,
-tables, bold, inline code, links, Tip/Note/Warning callouts and accordions. Mintlify serves PDFs only on the Enterprise plan, so a PDF in this repo
+tables, bold, inline code, links, images (with Frame captions), Tip/Note/Warning callouts and accordions. Mintlify serves PDFs only on the Enterprise plan, so a PDF in this repo
 is NOT reachable on docs.mediafuse.org: host the output elsewhere.
 """
 import html
@@ -40,6 +40,7 @@ def inline(text, page_url):
 
 def convert(body, page_url):
     out, para, lst, table = [], [], None, []
+    caption = None
 
     def flush():
         nonlocal para, lst, table
@@ -67,6 +68,20 @@ def convert(body, page_url):
             flush(); out.append(f'<div class="callout {m.group(1).lower()}">'); continue
         if re.match(r"^</(Tip|Note|Warning)>$", line):
             flush(); out.append("</div>"); continue
+        m = re.match(r'^<Frame caption="([^"]*)">$', line)
+        if m:
+            flush(); caption = m.group(1); continue
+        if line == "</Frame>":
+            flush(); caption = None; continue
+        m = re.match(r"^!\[([^\]]*)\]\(([^)]+)\)$", line)
+        if m:
+            flush()
+            src = m.group(2)
+            if src.startswith("/"):
+                src = "file://" + os.path.join(ROOT, src.lstrip("/"))
+            cap = f"<figcaption>{inline(caption, page_url)}</figcaption>" if caption else ""
+            out.append(f'<figure><img src="{src}" alt="{html.escape(m.group(1))}">{cap}</figure>')
+            continue
         if line in ("<AccordionGroup>", "</AccordionGroup>"):
             flush(); continue
         m = re.match(r'^<Accordion title="([^"]+)">$', line)
@@ -117,6 +132,9 @@ li { margin: 2px 0; }
 .callout.note { border-color: #2563eb; background: #eff6ff; }
 .callout p { margin: 4px 0; }
 .accordion { border: 1px solid #e5e7eb; border-radius: 4px; padding: 8px 12px; margin: 8px 0; page-break-inside: avoid; }
+figure { margin: 10px 0 14px; page-break-inside: avoid; }
+figure img { max-width: 100%; max-height: 120mm; border: 1px solid #e5e7eb; border-radius: 4px; display: block; }
+figcaption { font-size: 8.5pt; color: #6b7280; margin-top: 4px; }
 footer { margin-top: 24px; border-top: 1px solid #e5e7eb; padding-top: 8px; font-size: 8.5pt; color: #6b7280; }
 """
 
