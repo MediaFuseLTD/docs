@@ -62,6 +62,12 @@
         "tab": "Publisher integration",
         "groups": [
           {
+            "group": "WordPress",
+            "pages": [
+              "publishers/wordpress-plugin"
+            ]
+          },
+          {
             "group": "Custom integration",
             "pages": [
               "publishers/overview",
