@@ -4,8 +4,8 @@
     python3 scripts/build_pdf.py publishers/wordpress-plugin.mdx files/mediafuse-wordpress-plugin-guide.pdf
 
 Needs Google Chrome or Chromium. Handles only what our guide pages use: headings, paragraphs, lists,
-tables, bold, inline code, links, Tip/Note/Warning callouts and accordions. Re-run it after editing the page
-and commit the PDF together with the page.
+tables, bold, inline code, links, Tip/Note/Warning callouts and accordions. Mintlify serves PDFs only on the Enterprise plan, so a PDF in this repo
+is NOT reachable on docs.mediafuse.org: host the output elsewhere.
 """
 import html
 import os
@@ -131,10 +131,8 @@ def main():
     title = re.search(r'^title: "(.*)"$', front, re.M).group(1)
     desc = re.search(r'^description: "(.*)"$', front, re.M).group(1)
     page_url = SITE + "/" + re.sub(r"\.mdx$", "", src)
-    # The online page offers this PDF; inside the PDF, point to the online page instead.
-    body = re.sub(r"<Tip>\s*Prefer a file\?.*?</Tip>",
-                  f"<Tip>\nOnline version, always up to date: [{page_url.replace('https://', '')}]({page_url})\n</Tip>",
-                  body, flags=re.S)
+    # Inside the PDF, point to the online page.
+    body = f"<Tip>\nOnline version, always up to date: [{page_url.replace('https://', '')}]({page_url})\n</Tip>\n\n" + body
 
     logo = "file://" + os.path.join(ROOT, "logo/mediafuse/Logo_MediaFuse.svg")
     doc = f"""<!doctype html><html><head><meta charset="utf-8"><title>{html.escape(title)} - MediaFuse</title>
