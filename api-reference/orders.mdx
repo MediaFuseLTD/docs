@@ -67,6 +67,15 @@ Fetches all orders for all members of your organization. Supports pagination and
     <ResponseField name="created_at" type="string">
       Order creation timestamp.
     </ResponseField>
+    <ResponseField name="guid" type="string | null">
+      Your own ID for the release, if you sent it to us by RSS feed (the `<guid>` of the item). `null` for orders placed any other way.
+    </ResponseField>
+    <ResponseField name="package" type="object | null">
+      The package of the order: `id` and `title`.
+    </ResponseField>
+    <ResponseField name="coverage_report_url" type="string | null">
+      Public link to the coverage report of the order. `null` while the order has no report link yet.
+    </ResponseField>
   </Expandable>
 </ResponseField>
 
@@ -110,7 +119,10 @@ curl -H "Authorization: Bearer cw_ext_your_key" \
       "press_release_title": "Chainwire Launches New Feature",
       "order_status": "finished",
       "distribution_date_utc": "2026-01-15 10:00:00",
-      "created_at": "2026-01-14 08:00:00"
+      "created_at": "2026-01-14 08:00:00",
+      "guid": "NWJ-12345",
+      "package": { "id": 89, "title": "NewsWire 2026" },
+      "coverage_report_url": "https://app.financewire.com/report/abc123"
     }
   ],
   "total": 42,

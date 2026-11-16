@@ -119,6 +119,34 @@
                           },
                           "created_at": {
                             "type": "string"
+                          },
+                          "guid": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "Your own ID for the release, sent as the RSS <guid>. null for orders placed any other way."
+                          },
+                          "package": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "title": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "coverage_report_url": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "Public link to the coverage report. null while the order has no report link yet."
                           }
                         }
                       }
@@ -141,7 +169,13 @@
                       "press_release_title": "Chainwire Launches New Feature",
                       "order_status": "finished",
                       "distribution_date_utc": "2026-01-15 10:00:00",
-                      "created_at": "2026-01-14 08:00:00"
+                      "created_at": "2026-01-14 08:00:00",
+                      "guid": "NWJ-12345",
+                      "package": {
+                        "id": 89,
+                        "title": "NewsWire 2026"
+                      },
+                      "coverage_report_url": "https://app.financewire.com/report/abc123"
                     }
                   ],
                   "total": 42,
@@ -193,6 +227,34 @@
                     "press_release_title": {
                       "type": "string"
                     },
+                    "guid": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "Your own ID for the release, sent as the RSS <guid>. null for orders placed any other way."
+                    },
+                    "package": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "title": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "coverage_report_url": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "Public link to the coverage report. null while the order has no report link yet."
+                    },
                     "data": {
                       "type": "array",
                       "items": {
@@ -218,6 +280,12 @@
                 "example": {
                   "order_id": 123,
                   "press_release_title": "Chainwire Launches New Feature",
+                  "guid": "NWJ-12345",
+                  "package": {
+                    "id": 89,
+                    "title": "NewsWire 2026"
+                  },
+                  "coverage_report_url": "https://app.financewire.com/report/abc123",
                   "data": [
                     {
                       "id": 1,
